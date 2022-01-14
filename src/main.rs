@@ -227,22 +227,12 @@ fn pick_planetoid(
 
 fn planetoid_movement_system(
 	time: Res<Time>,
-	mut planets_query: Query<(&Planetoid, &mut Transform, &mut Children)>,
-	mut moons_query: Query<(&Planetoid, &mut Transform, Without<Children>)>,
+	mut planetoids_query: Query<(&Planetoid, &mut Transform)>,
 ) {
-	for (planet, mut transform, moons) in planets_query.iter_mut() {
-		let angle = (planet.speed * (planet.time - time.seconds_since_startup())) as f32;
+	for (planetoid, mut transform) in planetoids_query.iter_mut() {
+		let angle = (planetoid.speed * (planetoid.time - time.seconds_since_startup())) as f32;
 		let rotation = Vec3::new(angle.cos(), 0.0, angle.sin());
 
-		transform.translation = rotation * planet.orbit_radius;
-
-		for moon_child in moons.iter() {
-			let (moon, mut transform, _) = moons_query.get_mut(*moon_child).unwrap();
-
-			let angle = (moon.speed * (moon.time - time.seconds_since_startup())) as f32;
-			let rotation = Vec3::new(angle.cos(), 0.0, angle.sin());
-
-			transform.translation = rotation * moon.orbit_radius;
-		}
+		transform.translation = rotation * planetoid.orbit_radius;
 	}
 }
