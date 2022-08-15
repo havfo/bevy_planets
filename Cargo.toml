@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8.4"
-bevy = { version = "0.6.0", features = ["dynamic"] }
-bevy_mod_raycast = { git = "https://github.com/aevyrie/bevy_mod_raycast" }
+bevy = { version = "0.8.0", features = ["dynamic"] }
+bevy_mod_raycast = { version = "0.6" }

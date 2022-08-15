@@ -2,7 +2,6 @@ use rand::Rng;
 use std::env;
 
 use bevy::{
-	core::FixedTimestep,
 	prelude::*,
 	diagnostic::{
 		FrameTimeDiagnosticsPlugin,
@@ -30,10 +29,7 @@ struct Planetoid {
 	time: f64,
 }
 
-#[derive(Component)]
 struct Pickable;
-
-const TIME_STEP: f32 = 1.0 / 60.0;
 
 fn main() {
 	let args: Vec<String> = env::args().collect();
@@ -49,16 +45,12 @@ fn main() {
 		.insert_resource(GameSettings { planets })
 		.add_startup_system(setup)
 		.add_system_to_stage(
-			CoreStage::PreUpdate,
-			update_raycast_with_cursor.before(RaycastSystem::BuildRays),
+			CoreStage::First,
+			update_raycast_with_cursor.before(RaycastSystem::BuildRays::<Pickable>),
 		)
-		.add_system_set(
-			SystemSet::new()
-				.with_run_criteria(FixedTimestep::step(TIME_STEP as f64))
-				.with_system(planetoid_movement_system),
-		)
+		.add_system(planetoid_movement_system)
 		.add_system(pick_planetoid)
-		.add_system(bevy::input::system::exit_on_esc_system)
+		.add_system(bevy::window::close_on_esc)
 		.run();
 }
 
@@ -172,7 +164,7 @@ fn setup(
 
 	// camera
 	commands
-		.spawn_bundle(PerspectiveCameraBundle {
+		.spawn_bundle(Camera3dBundle {
 			transform: Transform::from_xyz(0.0, 2.0, 0.0).looking_at(Vec3::ZERO, Vec3::X),
 			..Default::default()
 		})
@@ -197,7 +189,7 @@ fn pick_planetoid(
 				let mut closest_color_handle : Option<&Handle<StandardMaterial>> = None;
 
 				for (_planetoid, transform, handle) in planetoids_query.iter() {
-					let current_distance = transform.translation.distance(new_position);
+					let current_distance = transform.translation().distance(new_position);
 
 					// Reset all the colors
 					let color = &mut materials.get_mut(handle).unwrap().base_color;
